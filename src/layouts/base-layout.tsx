@@ -5,7 +5,7 @@ import DragWindowRegion from "@/components/drag-window-region";
 export default function BaseLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <DragWindowRegion title="electron-shadcn" />
+      <DragWindowRegion title="dah-bot" />
       <main className="h-screen p-2 pb-20">{children}</main>
     </>
   );

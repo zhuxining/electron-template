@@ -8,7 +8,7 @@ i18n
     resources: {
       en: {
         translation: {
-          appName: "electron-shadcn",
+          appName: "dah-bot",
           documentation: "Documentation",
           madeBy: "Made by LuanRoger",
           titleHomePage: "Home Page",
@@ -17,7 +17,7 @@ i18n
       },
       "pt-BR": {
         translation: {
-          appName: "electron-shadcn",
+          appName: "dah-bot",
           documentation: "Documentação",
           madeBy: "Feito por LuanRoger",
           titleHomePage: "Página Inicial",

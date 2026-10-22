@@ -48,7 +48,7 @@ function checkForUpdates() {
 
   updateElectronApp({
     updateSource: {
-      repo: "LuanRoger/electron-shadcn",
+      repo: "LuanRoger/dah-bot",
       type: UpdateSourceType.ElectronPublicUpdateService,
     },
   });
