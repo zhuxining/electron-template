@@ -15,7 +15,7 @@ export default function NavigationMenu() {
   const { t } = useTranslation();
 
   return (
-    <NavigationMenuBase className="text-muted-foreground px-2">
+    <NavigationMenuBase className="text-muted-foreground flex-none px-2">
       <NavigationMenuList>
         <NavigationMenuItem>
           <NavigationMenuLink className={navigationMenuTriggerStyle()} render={<Link to="/" />}>

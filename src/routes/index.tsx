@@ -26,7 +26,7 @@ function HomePage() {
   return (
     <>
       <NavigationMenu />
-      <div className="flex h-full flex-col items-center justify-center">
+      <div className="flex flex-1 flex-col items-center justify-center">
         <div className="flex flex-col items-end justify-center gap-0.5">
           <div className="inline-flex gap-2">
             <SiReact size={iconSize} />

@@ -1,88 +1,35 @@
-import { type ReactNode, useEffect, useState } from "react";
-
-import { getPlatform } from "@/actions/app";
-import { closeWindow, maximizeWindow, minimizeWindow } from "@/actions/window";
+import { type ReactNode } from "react";
 
 interface DragWindowRegionProps {
+  leading?: ReactNode;
   title?: ReactNode;
+  toolbar?: ReactNode;
+  reserveLeftControls?: boolean;
+  reserveRightControls?: boolean;
 }
 
-export default function DragWindowRegion({ title }: DragWindowRegionProps) {
-  const [platform, setPlatform] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-
-    getPlatform()
-      .then((value) => {
-        if (!active) {
-          return;
-        }
-
-        setPlatform(value);
-      })
-      .catch((error) => {
-        console.error("Failed to detect platform", error);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const isMacOS = platform === "darwin";
-
+export default function DragWindowRegion({
+  leading,
+  title,
+  toolbar,
+  reserveLeftControls = false,
+  reserveRightControls = false,
+}: DragWindowRegionProps) {
   return (
-    <div className="flex w-full items-stretch justify-between">
-      <div className="draglayer w-full">
-        {title && !isMacOS && (
-          <div className="flex flex-1 p-2 text-xs whitespace-nowrap text-gray-400 select-none">
-            {title}
-          </div>
-        )}
-        {isMacOS && (
-          <div className="flex flex-1 p-2">
-            {/* Maintain the same height but do not display content */}
+    <header
+      className="window-title-bar"
+      data-reserve-left={reserveLeftControls}
+      data-reserve-right={reserveRightControls}
+    >
+      <div className="window-title-bar-content">
+        {leading && <div className="window-no-drag window-title-bar-toolbar">{leading}</div>}
+        {title != null && <div className="window-title-bar-title">{title}</div>}
+        {toolbar && (
+          <div className="window-no-drag window-title-bar-toolbar window-title-bar-trailing">
+            {toolbar}
           </div>
         )}
       </div>
-      {!isMacOS && <WindowButtons />}
-    </div>
-  );
-}
-
-function WindowButtons() {
-  return (
-    <div className="flex">
-      <button
-        className="p-2 hover:bg-slate-300"
-        onClick={minimizeWindow}
-        title="Minimize"
-        type="button"
-      >
-        <svg aria-hidden="true" height="12" role="img" viewBox="0 0 12 12" width="12">
-          <rect fill="currentColor" height="1" width="10" x="1" y="6" />
-        </svg>
-      </button>
-      <button
-        className="p-2 hover:bg-slate-300"
-        onClick={maximizeWindow}
-        title="Maximize"
-        type="button"
-      >
-        <svg aria-hidden="true" height="12" role="img" viewBox="0 0 12 12" width="12">
-          <rect fill="none" height="9" stroke="currentColor" width="9" x="1.5" y="1.5" />
-        </svg>
-      </button>
-      <button className="p-2 hover:bg-red-300" onClick={closeWindow} title="Close" type="button">
-        <svg aria-hidden="true" height="12" role="img" viewBox="0 0 12 12" width="12">
-          <polygon
-            fill="currentColor"
-            fillRule="evenodd"
-            points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"
-          />
-        </svg>
-      </button>
-    </div>
+    </header>
   );
 }

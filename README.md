@@ -49,7 +49,7 @@ To develop a Electron app, you probably will need some UI, test, formatter, styl
 
 - Use Context isolation
 - [React Compiler](https://react.dev/learn/react-compiler) is enabled through `oxc-transform-react`, without Babel.
-- `titleBarStyle`: hidden (Using custom title bar)
+- Window chrome uses macOS native traffic lights and Windows native window controls overlay.
 - Geist as default font
 - Some default styles was applied, check the [`styles`](https://github.com/zhuxining/electron-template/tree/main/src/styles) directory
 - Electron's built-in DevTools are available in development. React DevTools are not installed automatically.
@@ -93,6 +93,31 @@ bun run typecheck   # Check TypeScript only
 bun run test        # Run unit tests once
 bun run test:watch  # Watch unit tests
 ```
+
+## Title bar configuration
+
+`src/config/window.ts` centralizes platform title bar styles, native control colors, heights, and fallback control widths. The main process reads its window options, and `BaseLayout` reads its layout parameters. The component remains in `src/components`, layout in `src/layouts`, and styles in `src/styles/global.css`. `BaseLayout` owns the shared platform and title bar CSS variables.
+
+macOS uses `hiddenInset` with traffic lights vertically centered using the shared title bar height. Windows uses native window controls overlay, with CSS environment variables reserving the actual control area. Other platforms retain their native title bar.
+
+Each column has its own draggable header and a content area that fills the remaining height. The column dividers extend from the top to the bottom of the window in normal, maximized, and full-screen windows. `DragWindowRegion` accepts `leading`, `title`, and `toolbar` slots. Empty space is draggable; the toolbar and common interactive elements are excluded from dragging. Use `window-no-drag` for custom interactive content. Native controls retain their system behavior.
+
+`BaseLayout` exposes `title`, `toolbar`, `leftPanel`, `rightPanel`, and `children` slots. When a panel collapses, its button moves to the center column header so the panel can be reopened. Both panels resize independently and restore their previous width when expanded. Omit a panel slot to remove that panel and its button. The root route contains example panel content using the Sidebar primitives.
+
+```tsx
+<BaseLayout
+  title={<span>My workspace</span>}
+  toolbar={<Button variant="ghost">New</Button>}
+  leftPanel={<nav>Navigation</nav>}
+  rightPanel={<div>Details</div>}
+>
+  <Outlet />
+</BaseLayout>
+```
+
+The app observes its own native window fullscreen state through an oRPC event stream. Entering fullscreen removes the traffic light inset; leaving fullscreen restores it. Subscriptions are canceled when the layout unmounts. Windows control colors follow theme changes in the main process.
+
+Validate native dragging, double-click preferences, Windows snap layouts, display scaling, and full-screen transitions on each target OS before release.
 
 ## Auto update
 

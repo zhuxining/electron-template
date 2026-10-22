@@ -1,11 +1,14 @@
 import path from "node:path";
 
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, nativeTheme } from "electron";
 import { ipcMain } from "electron/main";
 import { UpdateSourceType, updateElectronApp } from "update-electron-app";
 
-import { ipcContext } from "@/ipc/context";
-
+import {
+  getTitleBarOverlayColors,
+  getWindowBackgroundColor,
+  getWindowTitleBarOptions,
+} from "./config/window";
 import { IPC_CHANNELS, inDevelopment } from "./constants";
 import { getBasePath } from "./utils/path";
 
@@ -13,9 +16,10 @@ function createWindow() {
   const basePath = getBasePath();
   const preload = path.join(basePath, "preload.cjs");
   const mainWindow = new BrowserWindow({
+    backgroundColor: getWindowBackgroundColor(nativeTheme.shouldUseDarkColors),
+    show: false,
     height: 600,
-    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
-    trafficLightPosition: process.platform === "darwin" ? { x: 5, y: 5 } : undefined,
+    ...getWindowTitleBarOptions(process.platform, nativeTheme.shouldUseDarkColors),
     webPreferences: {
       contextIsolation: true,
       devTools: inDevelopment,
@@ -26,7 +30,17 @@ function createWindow() {
     },
     width: 800,
   });
-  ipcContext.setMainWindow(mainWindow);
+  mainWindow.once("ready-to-show", () => mainWindow.show());
+  mainWindow.on("close", () => mainWindow.hide());
+
+  const updateWindowTheme = () => {
+    mainWindow.setBackgroundColor(getWindowBackgroundColor(nativeTheme.shouldUseDarkColors));
+    if (process.platform === "win32") {
+      mainWindow.setTitleBarOverlay(getTitleBarOverlayColors(nativeTheme.shouldUseDarkColors));
+    }
+  };
+  nativeTheme.on("updated", updateWindowTheme);
+  mainWindow.once("closed", () => nativeTheme.removeListener("updated", updateWindowTheme));
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL).catch((error: unknown) => {
@@ -64,7 +78,9 @@ async function setupORPC() {
     }
 
     serverPort.start();
-    rpcHandler.upgrade(serverPort);
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (!window) return;
+    rpcHandler.upgrade(serverPort, { context: { window } });
   });
 }
 

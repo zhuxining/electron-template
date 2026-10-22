@@ -18,8 +18,11 @@ export async function getCurrentTheme(): Promise<ThemePreferences> {
 }
 
 export async function setTheme(newTheme: ThemeMode) {
-  const isDarkMode = newTheme === "dark";
   await ipc.client.theme.setThemeMode(newTheme);
+  const isDarkMode =
+    newTheme === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+      : newTheme === "dark";
   localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, newTheme);
   updateDocumentTheme(isDarkMode);
 }
@@ -42,7 +45,20 @@ export async function syncWithLocalTheme() {
   await setTheme(local);
 }
 
+export function watchSystemTheme() {
+  const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const handleChange = (event: MediaQueryListEvent) => {
+    const localTheme = localStorage.getItem(LOCAL_STORAGE_KEYS.THEME);
+    if (!localTheme || localTheme === "system") {
+      updateDocumentTheme(event.matches);
+    }
+  };
+  mediaQuery.addEventListener("change", handleChange);
+  return () => mediaQuery.removeEventListener("change", handleChange);
+}
+
 function updateDocumentTheme(isDarkMode: boolean) {
+  document.documentElement.style.colorScheme = isDarkMode ? "dark" : "light";
   if (isDarkMode) {
     document.documentElement.classList.add("dark");
   } else {

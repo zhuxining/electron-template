@@ -1,6 +1,7 @@
-import { appVersion, currentPlatfom } from "./handlers";
+import { appVersion, currentPlatfom, windowState } from "./handlers";
 
 export const app = {
   appVersion,
   currentPlatfom,
+  windowState,
 };
