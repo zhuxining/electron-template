@@ -8,18 +8,18 @@ i18n
     resources: {
       en: {
         translation: {
-          appName: "dah-bot",
+          appName: "electron-template",
           documentation: "Documentation",
-          madeBy: "Made by LuanRoger",
+          madeBy: "Made by zhuxining",
           titleHomePage: "Home Page",
           titleSecondPage: "Second Page",
         },
       },
       "pt-BR": {
         translation: {
-          appName: "dah-bot",
+          appName: "electron-template",
           documentation: "Documentação",
-          madeBy: "Feito por LuanRoger",
+          madeBy: "Feito por zhuxining",
           titleHomePage: "Página Inicial",
           titleSecondPage: "Segunda Página",
         },

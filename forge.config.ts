@@ -51,8 +51,8 @@ const config: ForgeConfig = {
         draft: true,
         prerelease: false,
         repository: {
-          name: "dah-bot",
-          owner: "LuanRoger",
+          name: "electron-template",
+          owner: "zhuxining",
         },
       },
       /*

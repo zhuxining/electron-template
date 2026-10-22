@@ -33,7 +33,9 @@ export default function NavigationMenu() {
         <NavigationMenuItem>
           <NavigationMenuLink
             className={navigationMenuTriggerStyle()}
-            render={<ExternalLink href="https://docs.luanroger.dev/dah-bot/docs/overview" />}
+            render={
+              <ExternalLink href="https://docs.zhuxining.dev/electron-template/docs/overview" />
+            }
           >
             {t("documentation")}
           </NavigationMenuLink>

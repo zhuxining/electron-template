@@ -1,8 +1,8 @@
-# dah-bot
+# electron-template
 
 Electron in all its glory. Everything you will need to develop your beautiful desktop application.
 
-![Demo GIF](https://github.com/LuanRoger/dah-bot/blob/main/images/demo.png)
+![Demo GIF](https://github.com/zhuxining/electron-template/blob/main/images/demo.png)
 
 ## Libs and tools
 
@@ -43,7 +43,7 @@ To develop a Electron app, you probably will need some UI, test, formatter, styl
 
 ### CI/CD 🚀
 
-- Pre-configured [GitHub Actions workflow](https://github.com/LuanRoger/dah-bot/blob/main/.github/workflows/playwright.yml), for test with Playwright
+- Pre-configured [GitHub Actions workflow](https://github.com/zhuxining/electron-template/blob/main/.github/workflows/playwright.yml), for test with Playwright
 
 ### Project preferences 🎯
 
@@ -51,7 +51,7 @@ To develop a Electron app, you probably will need some UI, test, formatter, styl
 - [React Compiler](https://react.dev/learn/react-compiler) is enabled through `oxc-transform-react`, without Babel.
 - `titleBarStyle`: hidden (Using custom title bar)
 - Geist as default font
-- Some default styles was applied, check the [`styles`](https://github.com/LuanRoger/dah-bot/tree/main/src/styles) directory
+- Some default styles was applied, check the [`styles`](https://github.com/zhuxining/electron-template/tree/main/src/styles) directory
 - Electron's built-in DevTools are available in development. React DevTools are not installed automatically.
 
 ## How to use
@@ -61,7 +61,7 @@ Requires Node.js 22.17.0 or newer and Bun. Main process changes automatically re
 1. Clone this repository
 
 ```bash
-git clone https://github.com/LuanRoger/dah-bot.git
+git clone https://github.com/zhuxining/electron-template.git
 ```
 
 Or use it as a template on GitHub
@@ -103,7 +103,7 @@ The auto update uses GitHub Releases as source for the updates. The `release` sc
 
 You can also use the GitHub Actions workflow to automatically create a new release when you push a new tag to the repository. The workflow need to be triggered manually, but you can modify to fit your needs. Also, the release is created as draft by default, so you can review and set a proper description before publish.
 
-> Check the [`.github/workflows/publish.yml`](https://github.com/LuanRoger/dah-bot/blob/main/.github/workflows/publish.yaml) file for more details.
+> Check the [`.github/workflows/publish.yml`](https://github.com/zhuxining/electron-template/blob/main/.github/workflows/publish.yaml) file for more details.
 
 When you open the app, it will check for updates automatically. If an update is available, it will download and install the update, after that, it will restart the app to apply the update. This ensure that your users always have the latest version of your app.
 
@@ -111,12 +111,12 @@ The auto update is implemented using [update-electron-app](https://github.com/el
 
 ## Documentation
 
-Check out the full documentation [here](https://docs.luanroger.dev/dah-bot).
+Check out the full documentation [here](https://docs.zhuxining.dev/electron-template).
 
 ## Used by
 
-- [yaste](https://github.com/LuanRoger/yaste) - yaste (Yet another super ₛᵢₘₚₗₑ text editor) is a text editor, that can be used as an alternative to the native text editor of your SO, maybe.
-- [eletric-drizzle](https://github.com/LuanRoger/electric-drizzle) - shadcn-ui and Drizzle ORM with Electron.
+- [yaste](https://github.com/zhuxining/yaste) - yaste (Yet another super ₛᵢₘₚₗₑ text editor) is a text editor, that can be used as an alternative to the native text editor of your SO, maybe.
+- [eletric-drizzle](https://github.com/zhuxining/electric-drizzle) - shadcn-ui and Drizzle ORM with Electron.
 - [Wordle Game](https://github.com/masonyekta/wordle-game) - A Wordle game which features interactive gameplay, cross-platform compatibility, and integration with a custom Wordle API for word validation and letter correctness.
 - [Mehr 🌟](https://github.com/xmannii/MehrLocalChat) - A modern, elegant local AI chatbot application using Electron, React, shadcn/ui, and Ollama.
 
@@ -124,4 +124,4 @@ Check out the full documentation [here](https://docs.luanroger.dev/dah-bot).
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/LuanRoger/dah-bot/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/zhuxining/electron-template/blob/main/LICENSE) file for details.
