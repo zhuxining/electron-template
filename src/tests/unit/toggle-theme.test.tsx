@@ -1,5 +1,6 @@
 import { render } from "@testing-library/react";
-import { expect, test } from "vitest";
+import { expect, test } from "vite-plus/test";
+
 import ToggleTheme from "@/components/toggle-theme";
 
 test("renders ToggleTheme", () => {

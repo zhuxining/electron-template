@@ -1,4 +1,5 @@
 import type { i18n } from "i18next";
+
 import { LOCAL_STORAGE_KEYS } from "@/constants";
 
 export function setAppLanguage(lang: string, i18: i18n) {

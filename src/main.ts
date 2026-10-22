@@ -1,12 +1,12 @@
 import path from "node:path";
+
 import { app, BrowserWindow } from "electron";
+import { installExtension, REACT_DEVELOPER_TOOLS } from "electron-devtools-installer";
 import { ipcMain } from "electron/main";
-import {
-  installExtension,
-  REACT_DEVELOPER_TOOLS,
-} from "electron-devtools-installer";
 import { UpdateSourceType, updateElectronApp } from "update-electron-app";
+
 import { ipcContext } from "@/ipc/context";
+
 import { IPC_CHANNELS, inDevelopment } from "./constants";
 import { getBasePath } from "./utils/path";
 
@@ -16,8 +16,7 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     height: 600,
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
-    trafficLightPosition:
-      process.platform === "darwin" ? { x: 5, y: 5 } : undefined,
+    trafficLightPosition: process.platform === "darwin" ? { x: 5, y: 5 } : undefined,
     webPreferences: {
       contextIsolation: true,
       devTools: inDevelopment,
@@ -33,9 +32,7 @@ function createWindow() {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(
-      path.join(basePath, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
-    );
+    mainWindow.loadFile(path.join(basePath, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 }
 
@@ -62,6 +59,9 @@ async function setupORPC() {
 
   ipcMain.on(IPC_CHANNELS.START_ORPC_SERVER, (event) => {
     const [serverPort] = event.ports;
+    if (!serverPort) {
+      return;
+    }
 
     serverPort.start();
     rpcHandler.upgrade(serverPort);

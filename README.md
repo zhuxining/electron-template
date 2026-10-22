@@ -11,14 +11,13 @@ To develop a Electron app, you probably will need some UI, test, formatter, styl
 ### Core 🏍️
 
 - [Electron 43](https://www.electronjs.org)
-- [Vite 8](https://vitejs.dev)
+- [Vite Plus](https://viteplus.dev) (Vite, test runner, linting, and formatting)
 
 ### DX 🛠️
 
-- [TypeScript 6](https://www.typescriptlang.org)
+- [TypeScript 7](https://www.typescriptlang.org)
 - [oRPC](https://orpc.unnoq.com)
-- [Prettier](https://prettier.io)
-- [Ultracite with Biome](https://www.ultracite.ai/providers/biome)
+- [Oxlint and Oxfmt via Vite Plus](https://viteplus.dev)
 - [Zod 4](https://zod.dev)
 - [React Query (TanStack)](https://react-query.tanstack.com)
 
@@ -49,7 +48,7 @@ To develop a Electron app, you probably will need some UI, test, formatter, styl
 ### Project preferences 🎯
 
 - Use Context isolation
-- [React Compiler](https://react.dev/learn/react-compiler) is enabled by default.
+- [React Compiler](https://react.dev/learn/react-compiler) is enabled through `oxc-transform-react`, without Babel.
 - `titleBarStyle`: hidden (Using custom title bar)
 - Geist as default font
 - Some default styles was applied, check the [`styles`](https://github.com/LuanRoger/electron-shadcn/tree/main/src/styles) directory
@@ -68,18 +67,30 @@ Or use it as a template on GitHub
 2. Install dependencies
 
 ```bash
-npm install
+bun install
 ```
 
 3. Run the app
 
 ```bash
-npm run start
+bun run start
 ```
 
 Now you can go directly to `/src/routes/index.tsx` and modify the app as you want.
 
 > You can also delete the `/src/routes/second.tsx` file if you don't want a second page.
+
+## Development checks
+
+Vite Plus configures linting, formatting, and unit tests in [`vite.config.ts`](./vite.config.ts). Electron Forge uses the separate main, preload, and renderer Vite configs.
+
+```bash
+bun run check       # Check formatting, lint, and types
+bun run fix         # Apply formatting and lint fixes
+bun run typecheck   # Check TypeScript only
+bun run test        # Run unit tests once
+bun run test:watch  # Watch unit tests
+```
 
 ## Auto update
 
@@ -92,7 +103,7 @@ You can also use the GitHub Actions workflow to automatically create a new relea
 
 > Check the [`.github/workflows/publish.yml`](https://github.com/LuanRoger/electron-shadcn/blob/main/.github/workflows/publish.yaml) file for more details.
 
-When you open the app, it will check for updates automatically. If an update is available, it will download and install the update, after that, it will restart the app to apply the update. This ensure  that your users always have the latest version of your app.
+When you open the app, it will check for updates automatically. If an update is available, it will download and install the update, after that, it will restart the app to apply the update. This ensure that your users always have the latest version of your app.
 
 The auto update is implemented using [update-electron-app](https://github.com/electron/update-electron-app) to check the updates and apply them. For the publishing, it is using the [Electron Forge's GitHub publisher](https://www.electronforge.io/config/publishers/github).
 
