@@ -52,7 +52,7 @@ To develop a Electron app, you probably will need some UI, test, formatter, styl
 - `titleBarStyle`: hidden (Using custom title bar)
 - Geist as default font
 - Some default styles was applied, check the [`styles`](https://github.com/LuanRoger/electron-shadcn/tree/main/src/styles) directory
-- React DevTools are installed by default
+- Electron's built-in DevTools are available in development. React DevTools are not installed automatically.
 
 ## How to use
 

@@ -1,7 +1,6 @@
 import path from "node:path";
 
 import { app, BrowserWindow } from "electron";
-import { installExtension, REACT_DEVELOPER_TOOLS } from "electron-devtools-installer";
 import { ipcMain } from "electron/main";
 import { UpdateSourceType, updateElectronApp } from "update-electron-app";
 
@@ -12,7 +11,7 @@ import { getBasePath } from "./utils/path";
 
 function createWindow() {
   const basePath = getBasePath();
-  const preload = path.join(basePath, "preload.js");
+  const preload = path.join(basePath, "preload.cjs");
   const mainWindow = new BrowserWindow({
     height: 600,
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
@@ -36,16 +35,11 @@ function createWindow() {
   }
 }
 
-async function installExtensions() {
-  try {
-    const result = await installExtension(REACT_DEVELOPER_TOOLS);
-    console.log(`Extensions installed successfully: ${result.name}`);
-  } catch {
-    console.error("Failed to install extensions");
-  }
-}
-
 function checkForUpdates() {
+  if (!app.isPackaged) {
+    return;
+  }
+
   updateElectronApp({
     updateSource: {
       repo: "LuanRoger/electron-shadcn",
@@ -70,10 +64,9 @@ async function setupORPC() {
 
 app.whenReady().then(async () => {
   try {
-    createWindow();
-    await installExtensions();
-    checkForUpdates();
     await setupORPC();
+    createWindow();
+    checkForUpdates();
   } catch (error) {
     console.error("Error during app initialization:", error);
   }
