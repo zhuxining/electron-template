@@ -14,6 +14,7 @@ const config: ForgeConfig = {
   },
   plugins: [
     new VitePlugin({
+      hotRestart: true,
       build: [
         {
           config: "vite.main.config.mts",

@@ -56,6 +56,8 @@ To develop a Electron app, you probably will need some UI, test, formatter, styl
 
 ## How to use
 
+Requires Node.js 22.17.0 or newer and Bun. Main process changes automatically restart the app during development.
+
 1. Clone this repository
 
 ```bash
@@ -97,7 +99,7 @@ bun run test:watch  # Watch unit tests
 > [!WARNING]
 > This feature only work in open-source repositories in GitHub, if you need to use in a private repository, you need to setup a custom update server. Check the [Updating Applications](https://www.electronjs.org/docs/latest/tutorial/updates) section in the Electron documentation for more details.
 
-The auto update uses GitHub Releases as source for the updates. The `publish` script will automatically create a new release with the version specified in your `package.json` file. You can run locally the `publish` script to create a new release, but you need to set the `GITHUB_TOKEN` environment variable with a GitHub Personal Access Token that has permission to create releases in your repository.
+The auto update uses GitHub Releases as source for the updates. The `release` script will automatically create a new release with the version specified in your `package.json` file. You can run locally the `release` script to create a new release, but you need to set the `GITHUB_TOKEN` environment variable with a GitHub Personal Access Token that has permission to create releases in your repository.
 
 You can also use the GitHub Actions workflow to automatically create a new release when you push a new tag to the repository. The workflow need to be triggered manually, but you can modify to fit your needs. Also, the release is created as draft by default, so you can review and set a proper description before publish.
 

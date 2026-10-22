@@ -25,4 +25,4 @@ jobs:
       - name: Publish Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bun run publish
+        run: bun run release

@@ -11,13 +11,13 @@
     "check": "vp check --fix",
     "make": "electron-forge make",
     "package": "electron-forge package",
-    "publish": "electron-forge publish",
     "start": "electron-forge start",
     "test": "vp test run",
     "test:all": "vp test run && playwright test",
     "test:e2e": "playwright test",
     "test:unit": "vp test run",
-    "test:watch": "vp test --watch"
+    "test:watch": "vp test --watch",
+    "release": "electron-forge release"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
