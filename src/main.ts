@@ -29,9 +29,15 @@ function createWindow() {
   ipcContext.setMainWindow(mainWindow);
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL).catch((error: unknown) => {
+      console.error("Failed to load main window URL:", error);
+    });
   } else {
-    mainWindow.loadFile(path.join(basePath, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+    mainWindow
+      .loadFile(path.join(basePath, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`))
+      .catch((error: unknown) => {
+        console.error("Failed to load main window file:", error);
+      });
   }
 }
 
@@ -62,14 +68,15 @@ async function setupORPC() {
   });
 }
 
-app.whenReady().then(async () => {
-  try {
-    await setupORPC();
-    createWindow();
-    checkForUpdates();
-  } catch (error) {
-    console.error("Error during app initialization:", error);
-  }
+async function initializeApp() {
+  await app.whenReady();
+  await setupORPC();
+  createWindow();
+  checkForUpdates();
+}
+
+initializeApp().catch((error: unknown) => {
+  console.error("Error during app initialization:", error);
 });
 
 //osX only

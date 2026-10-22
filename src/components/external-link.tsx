@@ -11,7 +11,9 @@ export default function ExternalLink({ children, className, href, ...props }: Ex
       return;
     }
 
-    openExternalLink(href);
+    openExternalLink(href).catch((error: unknown) => {
+      console.error("Failed to open external link:", error);
+    });
   }
 
   return (

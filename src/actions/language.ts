@@ -4,7 +4,9 @@ import { LOCAL_STORAGE_KEYS } from "@/constants";
 
 export function setAppLanguage(lang: string, i18: i18n) {
   localStorage.setItem(LOCAL_STORAGE_KEYS.LANGUAGE, lang);
-  i18.changeLanguage(lang);
+  i18.changeLanguage(lang).catch((error: unknown) => {
+    console.error("Failed to change app language:", error);
+  });
   document.documentElement.lang = lang;
 }
 
@@ -14,6 +16,8 @@ export function updateAppLanguage(i18: i18n) {
     return;
   }
 
-  i18.changeLanguage(localLang);
+  i18.changeLanguage(localLang).catch((error: unknown) => {
+    console.error("Failed to restore app language:", error);
+  });
   document.documentElement.lang = localLang;
 }
