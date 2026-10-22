@@ -7,10 +7,32 @@ import { VitePlugin } from "@electron-forge/plugin-vite";
 import type { ForgeConfig } from "@electron-forge/shared-types";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
 
+import { APP_CONFIG } from "./src/shared/app-config";
+
 const config: ForgeConfig = {
-  makers: [new MakerSquirrel({}), new MakerZIP({}, ["darwin"]), new MakerRpm({}), new MakerDeb({})],
+  makers: [
+    new MakerSquirrel({
+      certificateFile: process.env.WINDOWS_CERTIFICATE_FILE,
+      certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
+    }),
+    new MakerZIP({}, ["darwin"]),
+    new MakerRpm({}),
+    new MakerDeb({}),
+  ],
   packagerConfig: {
     asar: true,
+    appBundleId: APP_CONFIG.appId,
+    osxSign: process.env.APPLE_SIGN_IDENTITY
+      ? { identity: process.env.APPLE_SIGN_IDENTITY }
+      : undefined,
+    osxNotarize:
+      process.env.APPLE_ID && process.env.APPLE_APP_PASSWORD && process.env.APPLE_TEAM_ID
+        ? {
+            appleId: process.env.APPLE_ID,
+            appleIdPassword: process.env.APPLE_APP_PASSWORD,
+            teamId: process.env.APPLE_TEAM_ID,
+          }
+        : undefined,
   },
   plugins: [
     new VitePlugin({
@@ -18,12 +40,12 @@ const config: ForgeConfig = {
       build: [
         {
           config: "vite.main.config.mts",
-          entry: "src/main.ts",
+          entry: "src/main/index.ts",
           target: "main",
         },
         {
           config: "vite.preload.config.mts",
-          entry: "src/preload.ts",
+          entry: "src/preload/index.ts",
           target: "preload",
         },
       ],
@@ -50,10 +72,7 @@ const config: ForgeConfig = {
       config: {
         draft: true,
         prerelease: false,
-        repository: {
-          name: "electron-template",
-          owner: "zhuxining",
-        },
+        repository: APP_CONFIG.repository,
       },
       /*
        * Publish release on GitHub as draft.

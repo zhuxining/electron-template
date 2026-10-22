@@ -1,11 +1,7 @@
-import path from "node:path";
-
 import { defineConfig } from "vite";
 
+import { sourceAlias } from "./scripts/vite-shared";
 export default defineConfig({
-  resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "./src"),
-    },
-  },
+  resolve: { alias: sourceAlias },
+  build: { lib: { entry: "src/main/index.ts", formats: ["cjs"], fileName: () => "main.cjs" } },
 });

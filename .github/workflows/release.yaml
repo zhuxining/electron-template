@@ -1,28 +1,45 @@
 name: Publish Release
-
 on:
   workflow_dispatch:
-
+permissions:
+  contents: write
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
-  publish-release:
-    runs-on: windows-latest
-    permissions:
-      contents: write
+  release:
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout git repo
-        uses: actions/checkout@v6
-
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-
-      - name: Install Node
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 24
-
-      - name: Install and build
-        run: bun install --frozen-lockfile
-
-      - name: Publish Release
+          node-version-file: .node-version
+      - run: bun install --frozen-lockfile
+      - run: node node_modules/electron/install.js
+      - name: Install Linux packaging libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes rpm
+          bunx playwright install-deps chromium
+          if test -f /proc/sys/kernel/apparmor_restrict_unprivileged_userns; then sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0; fi
+      - run: bun run check
+      - run: bun run test:unit
+      - run: bun run make
+      - name: Verify packaged executable (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum bun run test:smoke
+      - name: Verify packaged executable
+        if: runner.os != 'Linux'
+        run: bun run test:smoke
+      - name: Publish verified artifacts to a draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bun run release
+        run: bun run release --from-make

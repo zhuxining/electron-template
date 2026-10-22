@@ -1,9 +1,9 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S bun x tsx
 
 import { spawn } from "node:child_process";
 import { readdir } from "node:fs/promises";
 
-const DEFAULT_UI_PATH = "src/components/ui";
+const DEFAULT_UI_PATH = "src/renderer/components/ui";
 const DEFAULT_EXECUTOR = "npx";
 const COMPONENT_EXTENSION = ".tsx";
 
@@ -66,4 +66,7 @@ async function main() {
   await runCommand(installCommand);
 }
 
-main().catch(console.error);
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -3,7 +3,7 @@
     "jsx": "react-jsx",
     "target": "ESNext",
     "module": "ESNext",
-    "lib": ["dom", "ESNext"],
+    "lib": ["ESNext"],
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "useDefineForClassFields": true,
@@ -15,7 +15,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node"],
+    "types": [],
     "forceConsistentCasingInFileNames": true,
     "allowJs": false,
     "esModuleInterop": true,
@@ -28,14 +28,13 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true
   },
-  "include": [
-    "src/**/*",
-    "scripts/**/*",
-    "./package.json",
-    "./forge.config.ts",
-    "*.mts",
-    "vite.config.ts",
-    "playwright.config.ts",
-    "forge.env.d.ts"
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.renderer.json"
+    }
   ]
 }
