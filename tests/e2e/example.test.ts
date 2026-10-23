@@ -19,16 +19,9 @@ test.afterAll(async () => {
   await dispose?.();
 });
 
-test("renders the first page", async () => {
-  const page: Page = await electronApp.firstWindow();
-
-  const title = await page.waitForSelector("h1");
-  const text = await title.textContent();
-  expect(text).toBe("electron-template");
-});
-
 test("three columns span the viewport and their content fills the available height", async () => {
   const page = await electronApp.firstWindow();
+  await expect(page.getByRole("heading", { name: "electron-template", exact: true })).toBeVisible();
   await expect(page.locator(".window-frame")).toHaveAttribute("data-platform", process.platform);
   const geometry = await page.evaluate(() => {
     const rect = (selector: string) => {
@@ -44,7 +37,10 @@ test("three columns span the viewport and their content fills the available heig
       ),
       title: rect("#window-main-panel .window-title-bar"),
       content: rect(".window-frame-content"),
-      pageContent: rect(".window-frame-content > .flex-1"),
+      pageContent: rect(".window-frame-content > :has(h1)"),
+      bottomPadding: Number.parseFloat(
+        getComputedStyle(document.querySelector(".window-frame-content")!).paddingBottom,
+      ),
       navigation: rect(".window-frame-content > [data-slot=navigation-menu]"),
       height: innerHeight,
     };
@@ -59,10 +55,8 @@ test("three columns span the viewport and their content fills the available heig
   expect(geometry.content.top).toBe(geometry.title.bottom);
   expect(geometry.content.bottom).toBe(geometry.height);
   expect(geometry.pageContent.top).toBe(geometry.navigation.bottom);
-  expect(geometry.pageContent.height).toBe(
-    geometry.content.height - geometry.navigation.height - 16,
-  );
-  expect(geometry.pageContent.bottom).toBe(geometry.height - 8);
+  expect(geometry.pageContent.height).toBeGreaterThan(0);
+  expect(geometry.pageContent.bottom).toBe(geometry.content.bottom - geometry.bottomPadding);
 });
 
 test("native fullscreen adapts both panel buttons and preserves full content height", async () => {

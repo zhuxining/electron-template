@@ -11,21 +11,10 @@ function expectClean(window: EventEmitter) {
   for (const event of ["enter-full-screen", "leave-full-screen", "closed"])
     expect(window.listenerCount(event)).toBe(0);
 }
-test("observes the initial state and fullscreen transitions, then cleans up on return", async () => {
+test("yields the initial state, buffers rapid changes in order, and cleans up on return", async () => {
   const window = createWindow();
   const states = observeWindowState(window);
   expect((await states.next()).value).toEqual({ platform: process.platform, isFullScreen: false });
-  window.emit("enter-full-screen");
-  expect((await states.next()).value).toEqual({ platform: process.platform, isFullScreen: true });
-  window.emit("leave-full-screen");
-  expect((await states.next()).value).toEqual({ platform: process.platform, isFullScreen: false });
-  await states.return();
-  expectClean(window);
-});
-test("rapid fullscreen changes stay ordered while the consumer is paused", async () => {
-  const window = createWindow();
-  const states = observeWindowState(window);
-  await states.next();
   try {
     window.emit("enter-full-screen");
     window.emit("leave-full-screen");

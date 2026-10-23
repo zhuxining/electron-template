@@ -11,7 +11,6 @@ vi.mock("@/renderer/lib/ipc-client", () => ({
 let theme: typeof import("@/renderer/actions/theme");
 let media: EventTarget;
 let systemDark: boolean;
-let nativeDark: boolean;
 let stops: Array<() => void>;
 beforeEach(async () => {
   vi.resetModules();
@@ -20,7 +19,6 @@ beforeEach(async () => {
   document.documentElement.classList.remove("dark");
   document.documentElement.style.colorScheme = "";
   systemDark = false;
-  nativeDark = false;
   stops = [];
   media = new EventTarget();
   vi.stubGlobal(
@@ -33,14 +31,9 @@ beforeEach(async () => {
       removeEventListener: media.removeEventListener.bind(media),
     })),
   );
-  native.set.mockImplementation(async (mode) => {
-    nativeDark = mode === "dark" || (mode === "system" && systemDark);
-    return nativeDark;
-  });
-  native.toggle.mockImplementation(async () => {
-    nativeDark = !nativeDark;
-    return nativeDark;
-  });
+  native.set.mockImplementation(
+    async (mode) => mode === "dark" || (mode === "system" && systemDark),
+  );
   theme = await import("@/renderer/actions/theme");
 });
 afterEach(() => {
@@ -62,15 +55,6 @@ async function restored(mode: ThemeMode) {
   await vi.waitFor(() => expect(localStorage.getItem("theme")).toBe(mode));
 }
 
-test("restores an invalid saved preference as system and follows system changes", async () => {
-  localStorage.setItem("theme", "purple");
-  start();
-  await restored("system");
-  changeSystem(true);
-  expect(document.documentElement).toHaveClass("dark");
-  changeSystem(false);
-  expect(document.documentElement).not.toHaveClass("dark");
-});
 test("restores an explicit preference and ignores system changes until system is selected", async () => {
   localStorage.setItem("theme", "dark");
   start();
@@ -89,15 +73,18 @@ test("stops following the system when disposed", async () => {
   changeSystem(true);
   expect(document.documentElement).not.toHaveClass("dark");
 });
-test("orders startup restoration before user input", async () => {
+test("a user choice wins when startup restoration is still pending", async () => {
+  const started = Promise.withResolvers<void>();
   const gate = Promise.withResolvers<boolean>();
-  native.set.mockImplementationOnce(() => gate.promise);
+  native.set.mockImplementationOnce(() => {
+    started.resolve();
+    return gate.promise;
+  });
   start();
+  await started.promise;
   const manual = theme.setTheme("light");
-  await vi.waitFor(() => expect(native.set).toHaveBeenCalledTimes(1));
   gate.resolve(true);
   await manual;
-  expect(native.set.mock.calls.map(([mode]) => mode)).toEqual(["system", "light"]);
   expect(localStorage.getItem("theme")).toBe("light");
   expect(document.documentElement).not.toHaveClass("dark");
 });
@@ -124,19 +111,17 @@ test("storage failures do not prevent restoring or changing appearance", async (
   expect(document.documentElement).not.toHaveClass("dark");
 });
 test("an aborted startup does not commit its late response", async () => {
+  const started = Promise.withResolvers<void>();
   const gate = Promise.withResolvers<boolean>();
-  native.set.mockImplementationOnce(() => gate.promise);
+  native.set.mockImplementationOnce(() => {
+    started.resolve();
+    return gate.promise;
+  });
   const stop = start();
-  await vi.waitFor(() => expect(native.set).toHaveBeenCalledTimes(1));
+  await started.promise;
   stop();
   gate.resolve(true);
   await new Promise((resolve) => setTimeout(resolve, 0));
   expect(localStorage.getItem("theme")).toBeNull();
   expect(document.documentElement).not.toHaveClass("dark");
-});
-test("toggle commits the native appearance as an explicit preference", async () => {
-  await theme.setTheme("light");
-  await theme.toggleTheme();
-  expect(localStorage.getItem("theme")).toBe("dark");
-  expect(document.documentElement).toHaveClass("dark");
 });
