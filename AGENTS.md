@@ -6,6 +6,8 @@
 
 - 先原地实现；出现第二个真实消费者、运行环境隔离或可复现缺陷时，才新增抽象、目录或依赖。
 - 每个能力保留一个权威实现，状态转换、失败处理与资源清理归它所有。
+- Promise 必须明确等待、返回或作为后台任务执行；后台任务处理拒绝，长期任务明确取消与清理归属，不使用 async Promise executor。
+- 不提交临时调试输出或 `debugger`；保留必要诊断日志与冒烟验证输出。
 - 跨进程共享只有 `src/shared`（类型、常量、纯函数）；单进程内的复用留在本进程。
 - renderer 的全局 UI 状态只允许一个 Zustand store；不引入事件总线、依赖注入容器、第二套主题系统或额外包管理工具。
 
@@ -22,6 +24,7 @@
 ### Renderer 与状态
 
 - routes 负责页面组装；layouts 只提供空间与 slots；actions 是 renderer 调用原生能力的唯一入口。
+- 交互优先使用语义化 HTML，提供可访问名称、键盘操作和可见焦点；自定义交互同时验证鼠标与键盘路径。
 - 异步查询结果由 React Query 缓存，不复制到 Zustand；全局 QueryClient 只在 `src/renderer/lib/query-client.ts` 创建，通过 Provider 与 Router context 共享。
 - `src/renderer/lib/ipc-client.ts` 惰性创建唯一的 oRPC client 与 `createTanstackQueryUtils`，统一使用 `ipc` key prefix。actions 导出官方 utilities 生成的 query / mutation options，组件和 loader 不直接访问 IPC；不手写对应的 queryFn、mutationFn 或缓存键，取消信号由官方集成转发。
 - QueryClient 对 `ipc` prefix 的查询与 mutation 设置 `networkMode: "always"`，HTTP 保留在线语义；缓存键哈希使用 `createQueryKeyHashFn` 支持 oRPC 序列化类型。
@@ -42,6 +45,9 @@
 
 ### TypeScript 与依赖
 
+- 不确定 API 或兼容性时，先确认 `package.json` 中的依赖版本，再查对应版本的官方文档；Web API 以 Electron 内置 Chromium 的能力为准。文档与实现不一致时先核对版本和工程约束，涉及架构或用户行为取舍时向用户确认。
+- 优先保留类型推导并通过收窄表达约束；未知输入使用 `unknown`，不以 `any`、非空断言或强制类型转换掩盖未处理的边界。
+- 统一使用 TypeScript 7，版本以 `package.json` 为准；新增源码、测试、工具脚本和配置使用 `.ts` / `.tsx`，需要显式 ESM 时使用 `.mts`，不新增手写 `.js` / `.mjs` / `.cjs` 文件。现有 `public/theme-init.js` 因需在应用模块加载前由浏览器直接执行而保留；构建生成的 JavaScript 产物不受此限制。
 - 三份 tsconfig、`noEmit`、不恢复声明文件构建链；renderer 需要 main 类型时用 `import type`。
 - 新增顶层源码目录时同步 tsconfig 的 `include` 与 lint 规则；preload 产物名必须与窗口加载路径一致。
 - 应用名、appId 与仓库身份只在 [`src/shared/app-config.ts`](./src/shared/app-config.ts) 定义。
@@ -55,7 +61,7 @@
 - 不写镜像实现的测试（内部函数、mock 调用顺序、私有状态）；同一行为只留一份代表用例；删除被 E2E 覆盖的测试是正常维护。
 - 覆盖率只用于发现未执行路径，不作为目标。
 - E2E 必须通过 [`launchTestApp`](./tests/e2e/fixtures.ts) 启动（隔离 profile、清理、关闭主题模拟、启用沙箱），并针对本次构建的产物（`bun run test:e2e` 先打包）。
-- 平台相关分支用 `test.skip` 并写明原因。
+- 不提交测试 `.only`；平台相关分支用 `test.skip` 并写明原因，不无理由跳过测试。
 
 ## 流程
 
