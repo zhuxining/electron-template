@@ -1,9 +1,9 @@
 import { SiElectron, SiReact, SiVite } from "@icons-pack/react-simple-icons";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { getAppVersion } from "@/renderer/actions/app";
+import { appVersionQueryOptions } from "@/renderer/actions/app";
 import ExternalLink from "@/renderer/components/external-link";
 import LangToggle from "@/renderer/components/lang-toggle";
 import NavigationMenu from "@/renderer/components/navigation-menu";
@@ -17,14 +17,8 @@ import ToggleTheme from "@/renderer/components/toggle-theme";
 function HomePage() {
   const iconSize = 48;
 
-  const [appVersion, setAppVersion] = useState("0.0.0");
+  const version = useQuery(appVersionQueryOptions());
   const { t } = useTranslation();
-
-  useEffect(() => {
-    getAppVersion()
-      .then(setAppVersion)
-      .catch((error: unknown) => console.error("Failed to read app version:", error));
-  }, []);
 
   return (
     <>
@@ -38,7 +32,17 @@ function HomePage() {
           </div>
           <span className="flex items-end justify-end">
             <h1 className="font-mono text-4xl font-bold">{t("appName")}</h1>
-            <p className="text-muted-foreground text-sm">v{appVersion}</p>
+            <div className="text-muted-foreground text-sm">
+              {version.isPending ? (
+                <span role="status">{t("loadingAppVersion")}</span>
+              ) : version.isError ? (
+                <button type="button" onClick={() => void version.refetch()}>
+                  {t("retryAppVersion")}
+                </button>
+              ) : (
+                <span data-testid="app-version">v{version.data}</span>
+              )}
+            </div>
           </span>
           <div className="flex w-full justify-between">
             <ExternalLink
@@ -59,5 +63,9 @@ function HomePage() {
 }
 
 export const Route = createFileRoute("/")({
+  loader: ({ context }) => {
+    // Version metadata is optional; keep the page usable while it loads or fails.
+    void context.queryClient.prefetchQuery(appVersionQueryOptions());
+  },
   component: HomePage,
 });

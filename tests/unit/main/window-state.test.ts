@@ -22,6 +22,22 @@ test("observes the initial state and fullscreen transitions, then cleans up on r
   await states.return();
   expectClean(window);
 });
+test("rapid fullscreen changes stay ordered while the consumer is paused", async () => {
+  const window = createWindow();
+  const states = observeWindowState(window);
+  await states.next();
+  try {
+    window.emit("enter-full-screen");
+    window.emit("leave-full-screen");
+    window.emit("enter-full-screen");
+    for (const isFullScreen of [true, false, true]) {
+      expect((await states.next()).value).toEqual({ platform: process.platform, isFullScreen });
+    }
+  } finally {
+    await states.return();
+  }
+  expectClean(window);
+});
 test("abort terminates a pending observation and removes native listeners", async () => {
   const window = createWindow();
   const controller = new AbortController();

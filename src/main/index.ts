@@ -64,8 +64,8 @@ async function initializeApp() {
     }
     connections.get(event.sender)?.close();
     connections.set(event.sender, port);
-    port.start();
     rpcHandler.upgrade(port, { context: { window } });
+    port.start();
   });
   createWindow();
   if (app.isPackaged && !smokeTest && process.platform !== "linux") {

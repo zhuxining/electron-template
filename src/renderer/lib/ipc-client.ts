@@ -1,11 +1,13 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/message-port";
 import type { RouterClient } from "@orpc/server";
+import { createTanstackQueryUtils, type RouterUtils } from "@orpc/tanstack-query";
 
 import type { router } from "@/main/ipc/router";
 import { IPC_CHANNELS } from "@/shared/constants";
 
 let client: RouterClient<typeof router> | undefined;
+let utils: RouterUtils<RouterClient<typeof router>> | undefined;
 
 function getClient() {
   if (!client) {
@@ -25,5 +27,8 @@ function getClient() {
 export const ipc = {
   get client() {
     return getClient();
+  },
+  get utils() {
+    return (utils ??= createTanstackQueryUtils(getClient(), { prefix: "ipc" }));
   },
 };

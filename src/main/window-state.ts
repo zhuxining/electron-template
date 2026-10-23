@@ -1,6 +1,6 @@
 import type { EventEmitter } from "node:events";
 
-import { EventPublisher } from "@orpc/server";
+import { MemoryPublisher } from "@orpc/publisher/memory";
 
 import type { WindowState } from "@/shared/window-state";
 
@@ -10,10 +10,16 @@ export async function* observeWindowState(window: WindowSource, signal?: AbortSi
   if (signal?.aborted) return;
   const closed = new AbortController();
   const subscriptionSignal = signal ? AbortSignal.any([signal, closed.signal]) : closed.signal;
-  const publisher = new EventPublisher<{ change: WindowState }>();
+  const publisher = new MemoryPublisher<{ change: WindowState }>();
   const changes = publisher.subscribe("change", { signal: subscriptionSignal });
-  const publish = (isFullScreen: boolean) =>
-    publisher.publish("change", { platform: process.platform, isFullScreen });
+  const publish = (isFullScreen: boolean) => {
+    publisher
+      .publish("change", { platform: process.platform, isFullScreen })
+      .catch((error: unknown) => {
+        console.error("Failed to publish window state:", error);
+        closed.abort();
+      });
+  };
   const enter = () => publish(true);
   const leave = () => publish(false);
   const stop = () => closed.abort();

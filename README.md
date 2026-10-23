@@ -8,7 +8,8 @@ See [`package.json`](./package.json) for dependency versions and all available s
 
 - **Core:** [Electron](https://www.electronjs.org), [Vite Plus](https://viteplus.dev), and [TypeScript](https://www.typescriptlang.org).
 - **UI:** [React](https://react.dev), [Tailwind CSS](https://tailwindcss.com), [shadcn/ui](https://ui.shadcn.com), [Geist](https://vercel.com/font), [Lucide](https://lucide.dev), and [i18next](https://www.i18next.com).
-- **Routing and IPC:** [TanStack Router](https://tanstack.com/router) with file based routes, [oRPC](https://orpc.unnoq.com), and [Zod](https://zod.dev).
+- **Async data and UI state:** [TanStack Query](https://tanstack.com/query) and [Zustand](https://zustand.docs.pmnd.rs).
+- **Routing and IPC:** [TanStack Router](https://tanstack.com/router) with file based routes, [oRPC](https://orpc.dev), and [Zod](https://zod.dev).
 - **Testing:** [Vitest](https://vitest.dev), [React Testing Library](https://testing-library.com/docs/react-testing-library/intro), and [Playwright](https://playwright.dev).
 - **Packaging:** [Electron Forge](https://www.electronforge.io) with its GitHub publisher.
 
@@ -75,7 +76,29 @@ The CI test matrix runs on Linux, macOS, and Windows via [testing.yaml](./.githu
 
 The renderer has no Node integration and runs with sandboxing and context isolation enabled. Native capabilities go through the preload bridge and typed oRPC handlers. The main process validates the IPC sender against the app's own main frame and expected renderer URL before accepting a connection.
 
+The template uses oRPC v2 (currently beta). Keep `@orpc/client`, `@orpc/server`, `@orpc/publisher`, and `@orpc/tanstack-query` on matching versions and rebuild main and renderer together: the v2 RPC wire format is incompatible with v1. Window subscriptions use `MemoryPublisher` from `@orpc/publisher/memory`; publishing is asynchronous and failures close the subscription. See the official [v1 to v2 migration guide](https://orpc.dev/docs/migrations/from-v1).
+
+The [Electron adapter](https://orpc.dev/docs/adapters/electron) uses one MessageChannel per renderer document. The [IPC client](./src/renderer/lib/ipc-client.ts) lazily creates the channel and typed client; preload validates and forwards the transferred port, then main upgrades it before starting it. Ports are closed on navigation or destruction. The main handler uses an `onError` interceptor to report request failures. See also [MessagePorts in Electron](https://www.electronjs.org/docs/latest/tutorial/message-ports).
+
 External links are validated and restricted to HTTP/HTTPS URLs without embedded credentials. Navigation away from the trusted renderer entry is blocked, as are new windows and webviews. See [`src/main/security.ts`](./src/main/security.ts), [`src/main/window.ts`](./src/main/window.ts), and [`src/main/index.ts`](./src/main/index.ts) when extending these policies.
+
+## Async data and UI state
+
+A single [QueryClient](./src/renderer/lib/query-client.ts) is shared by `QueryClientProvider` and the Router context. React Query owns cached async data; Zustand owns synchronous UI state such as panel widths. Keep query results in the Query cache rather than copying them into the layout store. Native window events and theme synchronization retain their existing owners.
+
+The [official oRPC integration](https://orpc.dev/docs/integrations/tanstack-query) creates one lazy set of utilities through `createTanstackQueryUtils` in the IPC client. Its `ipc` prefix separates local query and mutation keys from future HTTP clients. Domain actions expose option factories built with `.queryOptions()` and `.mutationOptions()`; components and loaders import those factories rather than the IPC client. The integration generates typed keys and functions and forwards query cancellation signals automatically. The [home page](./src/renderer/routes/index.tsx) uses `appVersionQueryOptions()` from [app actions](./src/renderer/actions/app.ts); [external links](./src/renderer/components/external-link.tsx) use `openExternalLinkMutationOptions()` from [shell actions](./src/renderer/actions/shell.ts). External-link buttons are disabled while opening and become available again after a failure.
+
+Queries stay fresh for 30 seconds and retry failed reads once by default; mutations do not retry automatically. Override these defaults per operation. QueryClient sets `networkMode: "always"` for both queries and mutations under the `ipc` prefix, so local operations still run offline; HTTP operations retain the default online behavior. The app version uses `staleTime: Infinity` because it cannot change during the process lifetime. `createQueryKeyHashFn()` handles oRPC types such as `BigInt`, `Date`, `Set`, and `Map` in query keys. Queries use the library's default garbage collection time and are not persisted across app restarts.
+
+This application uses TanStack Router with memory history. The oRPC React Router resource-route guide targets an HTTP server in React Router framework mode; native desktop calls use MessagePort. Router context shares the same QueryClient as the Provider, and `defaultPreloadStaleTime: 0` delegates prefetch freshness to Query. The home loader starts a nonblocking `prefetchQuery` because version metadata is optional. Components read that same cache with `useQuery(appVersionQueryOptions())`. For critical route data, wait for it in a loader:
+
+```tsx
+loader: ({ context }) => context.queryClient.ensureQueryData(appVersionQueryOptions()),
+```
+
+For future domains, define options and cache keys inside actions using `ipc.utils.<domain>.<procedure>`. Pass inputs to the official builder instead of constructing keys manually. Use `.key()` for partial invalidation and `.queryKey()` for an exact cache entry. After writes, await invalidation in `onSuccess` for the affected queries. Keep any orchestration, such as the theme action's ordered native and DOM updates, inside its owning action instead of bypassing it with a generated mutation. Handler-defined errors retain their types through the integration and can be narrowed with `isDefinedError` from `@orpc/client`.
+
+The same utilities provide `.infiniteOptions()` for paginated APIs, `.liveOptions()` for the latest streamed value, and `.streamedOptions()` for accumulated events. Expose them through domain actions when the corresponding APIs exist. Window state continues to use its existing subscription. SSR hydration is only needed if a server-rendered application is added later.
 
 ## Native title bar and panels
 
