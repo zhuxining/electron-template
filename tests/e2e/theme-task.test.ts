@@ -28,7 +28,10 @@ test("a theme chosen in the UI survives a relaunch", async () => {
       .toBe(chosen === "dark");
     expect(await relaunched.evaluate(() => localStorage.getItem("theme"))).toBe(chosen);
   } finally {
-    await first.dispose();
-    await second?.dispose();
+    try {
+      await second?.dispose();
+    } finally {
+      await first.dispose();
+    }
   }
 });

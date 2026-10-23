@@ -12,8 +12,8 @@ export async function launchTestApp({ profile: existing }: { profile?: string } 
   let removed = false;
   const removeProfile = async () => {
     if (removed) return;
-    removed = true;
     await rm(profile, { recursive: true, force: true, maxRetries: 5 });
+    removed = true;
   };
   try {
     const app = await electron.launch({

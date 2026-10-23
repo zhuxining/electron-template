@@ -32,7 +32,10 @@ test("a resized panel keeps its width after a relaunch", async () => {
       .poll(async () => Math.abs((await restored.boundingBox())!.width - resized))
       .toBeLessThan(4);
   } finally {
-    await first.dispose();
-    await second?.dispose();
+    try {
+      await second?.dispose();
+    } finally {
+      await first.dispose();
+    }
   }
 });
